@@ -5,11 +5,59 @@ from .search_strategy import SearchStrategy
 from .state import State
 from .solver_stats import SolverStats
 from .csp import CSP
+from .variable import Variable
+from .domain import Domain
 
 
 @dataclass(frozen=True)
 class DepthFirstSearch[T](SearchStrategy[T]):
-    use_minimum_remaining_values: bool = True
+    minimum_remaining_values: bool = True
+    least_constraining_values: bool = True
+
+    @staticmethod
+    def _lcv_score(
+        value: T, variable: Variable[T], state: State[T], csp: CSP[T]
+    ) -> int:
+        """
+        Compute the Least Constraining Value (LCV) score for a candidate value.
+
+        This heuristic estimates how much assigning `value` to `variable` would
+        reduce the available options for neighboring variables. It does this by
+        simulating the assignment and checking how many values would be pruned
+        from the domains of other unassigned variables participating in the same constraints.
+
+        Lower scores are preferred — they represent values that allow more flexibility
+        for future variable assignments.
+
+        Parameters:
+            value: The candidate value to score.
+            variable: The variable being assigned.
+            state: The current search state containing all variables and their domains.
+            csp: The constraint satisfaction problem definition, including constraints.
+
+        Returns:
+            An integer score representing how constraining this value is.
+            Lower is better (fewer values eliminated from neighbors' domains).
+        """
+        total_eliminated = 0
+        for constraint in csp.constraints_for(variable.name):
+            for neighbor_name in constraint.variables:
+                if neighbor_name == variable.name:
+                    continue
+                neighbor = state[neighbor_name]
+                if neighbor.is_assigned():
+                    continue
+                domain_after = Domain(
+                    frozenset(
+                        v
+                        for v in neighbor.domain
+                        if constraint.is_satisfied_with_partial(
+                            {variable.name: value, neighbor.name: v}
+                        )
+                    )
+                )
+                total_eliminated += len(neighbor.domain) - len(domain_after)
+        return total_eliminated
 
     def _solve(
         self, csp: CSP[T], state: State[T], depth: int
@@ -25,7 +73,7 @@ class DepthFirstSearch[T](SearchStrategy[T]):
             return stats, state
 
         # Choose the next unassigned variable (leftmost strategy)
-        if self.use_minimum_remaining_values:
+        if self.minimum_remaining_values:
             variable = min(
                 (var for var in state.values() if not var.is_assigned()),
                 key=lambda var: len(var.domain),
@@ -33,8 +81,14 @@ class DepthFirstSearch[T](SearchStrategy[T]):
         else:
             variable = next(var for var in state.values() if not var.is_assigned())
 
+        values = variable.domain
+        if self.least_constraining_values:
+            values = sorted(
+                values, key=lambda v: self._lcv_score(v, variable, state, csp)
+            )
+
         # Try each value in its domain
-        for value in variable.domain:
+        for value in values:
             stats.assignments += 1
             assigned = variable.assign(value)
             next_state = state.with_variable(assigned)
@@ -59,5 +113,5 @@ class DepthFirstSearch[T](SearchStrategy[T]):
     ) -> tuple[SolverStats, Optional[State[T]]]:
         start = time.perf_counter()
         stats, result = self._solve(csp, state, 0)
-        stats.elapsed_seconds = time.perf_counter() - start
+        stats.elapsed_time = time.perf_counter() - start
         return stats, result

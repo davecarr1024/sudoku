@@ -20,20 +20,20 @@ class Domain[T](Set[T]):
         return iter(self.values)
 
     @override
-    def __contains__(self, value: T) -> bool:
+    def __contains__(self, value: object) -> bool:
         return value in self.values
 
     def _with_values(self, values: frozenset[T]) -> Self:
         return replace(self, values=values)
 
-    def __and__(self, rhs: Self) -> Self:
-        return self._with_values(self.values & rhs.values)
+    def __and__(self, rhs: Set[T]) -> Self:
+        return self._with_values(self.values & frozenset(rhs))
 
-    def __or__(self, rhs: Self) -> Self:
-        return self._with_values(self.values | rhs.values)
+    def __or__(self, rhs: Set[T]) -> Self:
+        return self._with_values(self.values | frozenset(rhs))
 
-    def __sub__(self, rhs: Self) -> Self:
-        return self._with_values(self.values - rhs.values)
+    def __sub__(self, rhs: Set[T]) -> Self:
+        return self._with_values(self.values - frozenset(rhs))
 
     def with_value(self, value: T) -> Self:
         return self._with_values(self.values | frozenset({value}))

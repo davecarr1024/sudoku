@@ -54,7 +54,7 @@ class Sudoku(Mapping[tuple[int, int], int]):
 
     def with_value(self, key: tuple[int, int], value: int) -> Self:
         self._validate_key(key)
-        return replace(self, clues=self.clues | {key: value})
+        return replace(self, clues=dict(self.clues) | {key: value})
 
     @staticmethod
     def _key_to_var_name(key: tuple[int, int]) -> str:
@@ -127,7 +127,7 @@ class Sudoku(Mapping[tuple[int, int], int]):
         # Reconstruct solved Sudoku
         solved = self
         for variable in result.values():
-            if not variable.is_assigned():
+            if variable.value is None:
                 raise self.SolveError(f"Unassigned variable in solution: {variable}")
 
             row, col = self._var_name_to_key(variable.name)
@@ -148,9 +148,9 @@ class Sudoku(Mapping[tuple[int, int], int]):
 
     @classmethod
     def from_str(cls, size: int, sudoku_str: str) -> Self:
-        grid = list[list[int]]()
+        grid = list[list[Optional[int]]]()
         for row, line in enumerate(sudoku_str.strip().splitlines()):
-            cols = list[int]()
+            cols = list[Optional[int]]()
             for col, value in enumerate(line.split()):
                 if value == ".":
                     cols.append(None)

@@ -16,7 +16,7 @@ def test_dfs_solves_all_different():
     )
 
     # Constraint: all three must have different values
-    csp = CSP([AllDifferentConstraint({"A", "B", "C"})])
+    csp = CSP([AllDifferentConstraint.for_vars("A", "B", "C")])
 
     # Solve
     propagator = AC3Propagator()
@@ -27,6 +27,7 @@ def test_dfs_solves_all_different():
     assert solution is not None
     values = {v.name: v.value for v in solution.values()}
     assert sorted(values.keys()) == ["A", "B", "C"]
-    assert sorted(values.values()) == [1, 2, 3]  # must all be different
+    assert all(value is not None for value in values.values())
+    assert sorted(value for value in values.values() if value is not None) == [1, 2, 3]
     assert stats.max_depth == 3
     assert stats.assignments < 6

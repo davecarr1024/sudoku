@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 from .constraint_propagator import ConstraintPropagator
 from .state import State
 from .variable import Variable
@@ -41,10 +42,8 @@ class AC3Propagator[T](ConstraintPropagator[T]):
                     if neighbor_name == var_name:
                         continue
                     neighbor = state[neighbor_name]
-                    revised, new_neighbor = self.revise(
-                        var, neighbor, constraint, state
-                    )
-                    if revised:
+                    new_neighbor = self.revise(var, neighbor, constraint, state)
+                    if new_neighbor is not None:
                         if not new_neighbor.is_valid():
                             return None
                         state = state.with_variable(new_neighbor)
@@ -59,7 +58,7 @@ class AC3Propagator[T](ConstraintPropagator[T]):
         neighbor: Variable[T],
         constraint: Constraint[T],
         state: State[T],
-    ) -> tuple[bool, Variable[T]]:
+    ) -> Optional[Variable[T]]:
         """
         Attempts to prune the domain of `neighbor` based on the given constraint and
         the current value/domain of `var`.
@@ -69,11 +68,10 @@ class AC3Propagator[T](ConstraintPropagator[T]):
         is removed from the domain.
 
         Returns:
-            - A boolean indicating whether the domain was changed
-            - The updated Variable[T] with a potentially smaller domain
+            - The updated Variable[T] with a potentially smaller domain if the revision was successful, or None.
         """
-        revised = False
         new_domain = neighbor.domain
+        revised = False
 
         for value in neighbor.domain:
             test_neighbor = neighbor.assign(value)
@@ -84,5 +82,7 @@ class AC3Propagator[T](ConstraintPropagator[T]):
                 revised = True
 
         if neighbor.value is not None and neighbor.value not in new_domain:
-            return False, None  # contradiction
-        return revised, neighbor.with_domain(new_domain)
+            return None  # contradiction
+        if not revised:
+            return None
+        return neighbor.with_domain(new_domain)

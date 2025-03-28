@@ -1,16 +1,19 @@
-from .constraint import Constraint
-from .state import State
 from dataclasses import dataclass
 from typing import override
+from collections.abc import Mapping, Collection
+from functools import cache
+from .constraint import Constraint
 
 
 @dataclass(frozen=True)
 class AllDifferentConstraint[T](Constraint[T]):
+    @cache
+    @staticmethod
+    def _is_satisfied_with_partial(items: Collection[tuple[str, T]]) -> bool:
+        return len(items) == len(set(v for _, v in items))
+
     @override
-    def is_satisfied(self, state: State[T]) -> bool:
-        values = [
-            variable.value
-            for name, variable in state.items()
-            if name in self.variables and variable.is_assigned()
-        ]
-        return len(values) == len(set(values))
+    def is_satisfied_with_partial(self, assignment: Mapping[str, T]) -> bool:
+        return AllDifferentConstraint[T]._is_satisfied_with_partial(
+            tuple(sorted(assignment.items()))
+        )

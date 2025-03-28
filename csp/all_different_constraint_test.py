@@ -8,12 +8,12 @@ def test_is_satisfied(subtests):
     for constraint, state, expected in list[tuple[AllDifferentConstraint, State, bool]](
         [
             (
-                AllDifferentConstraint(variables={"a", "b", "c"}),
+                AllDifferentConstraint.for_vars("a", "b", "c"),
                 State(),
                 True,
             ),
             (
-                AllDifferentConstraint(variables={"a", "b", "c"}),
+                AllDifferentConstraint.for_vars("a", "b", "c"),
                 State(
                     {
                         "a": Variable("a", Domain.for_values(1), 1),
@@ -23,7 +23,7 @@ def test_is_satisfied(subtests):
                 True,
             ),
             (
-                AllDifferentConstraint(variables={"a", "b", "c"}),
+                AllDifferentConstraint.for_vars("a", "b", "c"),
                 State(
                     {
                         "a": Variable("a", Domain.for_values(1), 1),
@@ -36,3 +36,26 @@ def test_is_satisfied(subtests):
     ):
         with subtests.test(constraint=constraint, state=state, expected=expected):
             assert constraint.is_satisfied(state) == expected
+
+
+def test_is_satisfied_with_partial(subtests):
+    for constraint, assignment, expected in list[
+        tuple[AllDifferentConstraint, dict, bool]
+    ](
+        [
+            (
+                AllDifferentConstraint.for_vars("a", "b", "c"),
+                {"a": 1, "b": 2},
+                True,
+            ),
+            (
+                AllDifferentConstraint.for_vars("a", "b", "c"),
+                {"a": 1, "b": 1},
+                False,
+            ),
+        ]
+    ):
+        with subtests.test(
+            constraint=constraint, assignment=assignment, expected=expected
+        ):
+            assert constraint.is_satisfied_with_partial(assignment) == expected

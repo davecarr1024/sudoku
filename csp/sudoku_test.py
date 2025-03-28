@@ -109,9 +109,9 @@ def test_make_csp_not_square():
 
 def test_from_grid(subtests):
     for size, grid, expected in list[
-        int,
         tuple[
-            list[list[int]],
+            int,
+            list[list[Optional[int]]],
             Optional[Sudoku],
         ],
     ](

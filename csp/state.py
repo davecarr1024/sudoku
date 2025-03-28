@@ -25,7 +25,7 @@ class State[T](Mapping[str, Variable[T]]):
         return replace(self, variables=variables)
 
     def with_variable(self, variable: Variable[T]) -> Self:
-        return self._with_variables(self.variables | {variable.name: variable})
+        return self._with_variables(dict(self.variables) | {variable.name: variable})
 
     def is_valid(self) -> bool:
         return all(var.is_valid() for var in self.variables.values())
