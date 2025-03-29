@@ -1,7 +1,6 @@
 from .state import State
 from .all_different_constraint import AllDifferentConstraint
 from .variable import Variable
-from .domain import Domain
 
 
 def test_is_satisfied(subtests):
@@ -14,22 +13,16 @@ def test_is_satisfied(subtests):
             ),
             (
                 AllDifferentConstraint.for_vars("a", "b", "c"),
-                State(
-                    {
-                        "a": Variable("a", Domain.for_values(1), 1),
-                        "b": Variable("b", Domain.for_values(2), 2),
-                    }
-                ),
+                State()
+                .with_variable(Variable.make("a", 1, assigned=1))
+                .with_variable(Variable.make("b", 2, assigned=2)),
                 True,
             ),
             (
                 AllDifferentConstraint.for_vars("a", "b", "c"),
-                State(
-                    {
-                        "a": Variable("a", Domain.for_values(1), 1),
-                        "b": Variable("b", Domain.for_values(1), 1),
-                    }
-                ),
+                State()
+                .with_variable(Variable.make("a", 1, assigned=1))
+                .with_variable(Variable.make("b", 1, assigned=1)),
                 False,
             ),
         ]
@@ -40,17 +33,27 @@ def test_is_satisfied(subtests):
 
 def test_is_satisfied_with_partial(subtests):
     for constraint, assignment, expected in list[
-        tuple[AllDifferentConstraint, dict, bool]
+        tuple[AllDifferentConstraint, frozenset[tuple[str, int]], bool]
     ](
         [
             (
                 AllDifferentConstraint.for_vars("a", "b", "c"),
-                {"a": 1, "b": 2},
+                frozenset(
+                    {
+                        ("a", 1),
+                        ("b", 2),
+                    }
+                ),
                 True,
             ),
             (
                 AllDifferentConstraint.for_vars("a", "b", "c"),
-                {"a": 1, "b": 1},
+                frozenset(
+                    {
+                        ("a", 1),
+                        ("b", 1),
+                    }
+                ),
                 False,
             ),
         ]

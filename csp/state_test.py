@@ -5,9 +5,11 @@ from .domain import Domain
 
 def test_with_variable():
     assert State().with_variable(Variable("a", Domain.for_values(1, 2, 3))) == State(
-        {
-            "a": Variable("a", Domain.for_values(1, 2, 3)),
-        }
+        frozenset(
+            {
+                Variable("a", Domain.for_values(1, 2, 3)),
+            }
+        )
     )
 
 

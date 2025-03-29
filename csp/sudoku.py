@@ -101,7 +101,7 @@ class Sudoku(Mapping[tuple[int, int], int]):
                         )
                     )
                 )
-        csp = CSP(constraints)
+        csp = CSP.for_constraints(*constraints)
         state = State()
         for row in range(self.size):
             for col in range(self.size):

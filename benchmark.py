@@ -1,3 +1,5 @@
+#!/home/runner/workspace/.pythonlibs/bin/python3.13
+
 from csp.sudoku import Sudoku
 from csp.depth_first_search import DepthFirstSearch
 from csp.ac3_propagator import AC3Propagator
@@ -22,42 +24,42 @@ benchmark_cases: list[tuple[str, Sudoku]] = [
             """,
         ),
     ),
-    (
-        "9x9 AI Escargot (very hard)",
-        Sudoku.from_str(
-            9,
-            """
-        1 . . . . 7 . 9 .
-        . 3 . . 2 . . . 8
-        . . 9 6 . . 5 . .
-        . . 5 3 . . 9 . .
-        . 1 . . 8 . . . 2
-        6 . . . . 4 . . .
-        3 . . . . . . 1 .
-        . 4 . . . . . . 7
-        . . 7 . . . 3 . .
-        """,
-        ),
-    ),
+    # (
+    #     "9x9 AI Escargot (very hard)",
+    #     Sudoku.from_str(
+    #         9,
+    #         """
+    #     1 . . . . 7 . 9 .
+    #     . 3 . . 2 . . . 8
+    #     . . 9 6 . . 5 . .
+    #     . . 5 3 . . 9 . .
+    #     . 1 . . 8 . . . 2
+    #     6 . . . . 4 . . .
+    #     3 . . . . . . 1 .
+    #     . 4 . . . . . . 7
+    #     . . 7 . . . 3 . .
+    #     """,
+    #     ),
+    # ),
 ]
 
 
 strategies: list[SearchStrategy[int]] = [
-    DepthFirstSearch(
-        AC3Propagator(),
-        minimum_remaining_values=False,
-        least_constraining_values=False,
-    ),
-    DepthFirstSearch(
-        AC3Propagator(),
-        minimum_remaining_values=False,
-        least_constraining_values=True,
-    ),
-    DepthFirstSearch(
-        AC3Propagator(),
-        minimum_remaining_values=True,
-        least_constraining_values=False,
-    ),
+    # DepthFirstSearch(
+    #     AC3Propagator(),
+    #     minimum_remaining_values=False,
+    #     least_constraining_values=False,
+    # ),
+    # DepthFirstSearch(
+    #     AC3Propagator(),
+    #     minimum_remaining_values=False,
+    #     least_constraining_values=True,
+    # ),
+    # DepthFirstSearch(
+    #     AC3Propagator(),
+    #     minimum_remaining_values=True,
+    #     least_constraining_values=False,
+    # ),
     DepthFirstSearch(
         AC3Propagator(),
         minimum_remaining_values=True,

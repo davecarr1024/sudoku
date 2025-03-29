@@ -16,7 +16,7 @@ def test_dfs_solves_all_different():
     )
 
     # Constraint: all three must have different values
-    csp = CSP([AllDifferentConstraint.for_vars("A", "B", "C")])
+    csp = CSP.for_constraints(AllDifferentConstraint.for_vars("A", "B", "C"))
 
     # Solve
     propagator = AC3Propagator()

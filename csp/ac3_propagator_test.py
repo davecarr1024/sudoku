@@ -8,7 +8,7 @@ from .all_different_constraint import AllDifferentConstraint
 
 def test_propagates_all_different_removes_assigned_value():
     # A and B must be different
-    csp = CSP([AllDifferentConstraint.for_vars("A", "B")])
+    csp = CSP.for_constraints(AllDifferentConstraint.for_vars("A", "B"))
 
     state = (
         State()
@@ -23,7 +23,7 @@ def test_propagates_all_different_removes_assigned_value():
 
 def test_propagation_failure_due_to_empty_domain():
     # A and B must be different, but B only has 1
-    csp = CSP([AllDifferentConstraint.for_vars("A", "B")])
+    csp = CSP.for_constraints(AllDifferentConstraint.for_vars("A", "B"))
 
     state = (
         State()
@@ -37,7 +37,7 @@ def test_propagation_failure_due_to_empty_domain():
 
 def test_no_domain_change_when_constraint_already_satisfied():
     # A and B already assigned different values
-    csp = CSP([AllDifferentConstraint.for_vars("A", "B")])
+    csp = CSP.for_constraints(AllDifferentConstraint.for_vars("A", "B"))
 
     state = (
         State()
