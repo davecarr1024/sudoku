@@ -1,68 +1,53 @@
-from dataclasses import dataclass, field
-from typing import Iterator, Iterable, override
-from collections.abc import Mapping
-from functools import cache
 from .variable import Variable
+from .delta_object import DeltaObject
+from .delta_record import DeltaRecord
+from typing import Iterable, Iterator, override
+from collections.abc import Mapping
 
 
-@dataclass(frozen=True)
-class State[T](Mapping[str, Variable[T]]):
-    variables: frozenset[Variable[T]] = field(default_factory=frozenset)
-    _cached_hash: int = field(
-        init=False,
-        repr=False,
-        compare=False,
-        hash=False,
-    )
-    _variable_cache: Mapping[str, Variable[T]] = field(
-        init=False,
-        repr=False,
-        compare=False,
-        hash=False,
-    )
+class State[T](DeltaObject, Mapping[str, Variable[T]]):
+    class Error(Exception): ...
 
-    @staticmethod
-    @cache
-    def _for_variables(variables: frozenset[Variable[T]]) -> "State[T]":
-        return State[T](variables)
+    class KeyError(Error, KeyError): ...
 
-    @staticmethod
-    def for_variables(*variables: Variable[T]) -> "State[T]":
-        return State[T]._for_variables(frozenset(variables))
-
-    def __post_init__(self) -> None:
-        object.__setattr__(self, "_cached_hash", hash(self.values))
-        object.__setattr__(self, "_variable_cache", {v.name: v for v in self.variables})
-
-    @override
-    def __hash__(self) -> int:
-        return self._cached_hash
+    def __init__(
+        self,
+        delta_record: DeltaRecord,
+        variables: Iterable[Variable[T]],
+    ) -> None:
+        super().__init__(delta_record)
+        if not all(
+            variable._delta_record is self._delta_record for variable in variables
+        ):
+            raise self.Error("Delta record mismatch between variables and state")
+        self._variables: dict[str, Variable[T]] = {v.name: v for v in variables}
 
     @override
     def __len__(self) -> int:
-        return len(self._variable_cache)
+        return len(self._variables)
 
     @override
     def __iter__(self) -> Iterator[str]:
-        return iter(self._variable_cache)
+        return iter(self._variables)
 
     @override
-    def __getitem__(self, key: str) -> Variable[T]:
-        return self._variable_cache[key]
+    def __getitem__(self, name: str) -> Variable[T]:
+        try:
+            return self._variables[name]
+        except KeyError as e:
+            raise self.KeyError(f"Variable {name} not found") from e
 
-    def _with_variables(self, variables: frozenset[Variable[T]]) -> "State[T]":
-        return State[T]._for_variables(variables)
+    def assign(self, name: str, value: T) -> None:
+        self[name].assign(value)
 
-    def with_variable(self, variable: Variable[T]) -> "State[T]":
-        updated = dict(self._variable_cache)
-        updated[variable.name] = variable
-        return self._with_variables(frozenset(updated.values()))
+    def unassign(self, name: str) -> None:
+        self[name].unassign()
 
-    def is_valid(self) -> bool:
-        return all(var.is_valid() for var in self.variables)
+    def variables(self) -> Iterable[Variable[T]]:
+        return self.values()
 
     def unassigned_variables(self) -> Iterable[Variable[T]]:
-        return (v for v in self.variables if not v.is_assigned())
+        return (v for v in self._variables.values() if not v.is_assigned())
 
-    def assign(self, variable_name: str, value: T) -> "State[T]":
-        return self.with_variable(self[variable_name].assign(value))
+    def is_valid(self) -> bool:
+        return all(v.domain_size() > 0 for v in self._variables.values())

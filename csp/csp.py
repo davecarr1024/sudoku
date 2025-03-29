@@ -1,33 +1,34 @@
-from dataclasses import dataclass
-from typing import Iterable, Iterator, Sized, override
-from functools import cache
 from .constraint import Constraint
 from .state import State
+from typing import Iterable, Iterator, override
+from collections.abc import Collection
 
 
-@dataclass(frozen=True)
-class CSP[T](Sized, Iterable[Constraint[T]]):
-    constraints: frozenset[Constraint[T]]
-
-    @classmethod
-    def for_constraints(cls, *constraints: Constraint[T]) -> "CSP[T]":
-        return cls(frozenset(constraints))
+class CSP[T](Collection[Constraint[T]]):
+    def __init__(self, constraints: Collection[Constraint[T]]) -> None:
+        self._constraints = constraints
+        self._by_variable: dict[str, list[Constraint[T]]] = {}
+        for constraint in self._constraints:
+            for var in constraint.variables:
+                self._by_variable.setdefault(var, []).append(constraint)
 
     @override
     def __len__(self) -> int:
-        return len(self.constraints)
+        return len(self._constraints)
 
     @override
     def __iter__(self) -> Iterator[Constraint[T]]:
-        return iter(self.constraints)
+        return iter(self._constraints)
 
-    @cache
-    def constraints_for(self, variable: str) -> Iterable[Constraint[T]]:
-        return tuple(
-            constraint
-            for constraint in self.constraints
-            if variable in constraint.variables
-        )
+    @override
+    def __contains__(self, constraint: object) -> bool:
+        return constraint in self._constraints
+
+    def constraints(self) -> Iterable[Constraint[T]]:
+        return self._constraints
+
+    def constraints_for(self, variable_name: str) -> Iterable[Constraint[T]]:
+        return self._by_variable.get(variable_name, [])
 
     def is_satisfied(self, state: State[T]) -> bool:
-        return all(constraint.is_satisfied(state) for constraint in self)
+        return all(constraint.is_satisfied(state) for constraint in self._constraints)

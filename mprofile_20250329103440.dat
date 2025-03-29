@@ -1,2 +1,0 @@
-CMDLINE /nix/store/c7ycrgwv039nqglbif98yggx211sdbcl-python3-3.12.3/bin/python3.12 ./benchmark.py
-MEM 0.125000 1743244480.4984

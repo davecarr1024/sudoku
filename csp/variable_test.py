@@ -1,104 +1,123 @@
 from .variable import Variable
 from .domain import Domain
+from .delta_record import DeltaRecord
 import pytest
-from typing import Optional
 
 
-def test_is_assigned(subtests):
-    for variable, expected in list[tuple[Variable, bool]](
-        [
-            (Variable("x", Domain.for_values(1, 2, 3)), False),
-            (Variable("x", Domain.for_values(1, 2, 3), 1), True),
-        ]
-    ):
-        with subtests.test(variable=variable, expected=expected):
-            assert variable.is_assigned() == expected
+def test_assign_value():
+    delta_record = DeltaRecord()
+    variable = Variable(delta_record, "a", Domain(delta_record, {1, 2, 3}))
+    assert variable.name == "a"
+    assert variable.value() is None
+    assert variable.domain == {1, 2, 3}
+    assert not variable.is_assigned()
+    assert variable.value() is None
+    variable.assign(1)
+    assert variable.value() == 1
+    assert variable.is_assigned()
+    variable.revert()
+    assert variable.value() is None
+    assert not variable.is_assigned()
 
 
-def test_assign(subtests):
-    for variable, value, expected in list[tuple[Variable, int, Optional[Variable]]](
-        [
-            (
-                Variable("a", Domain.for_values(1, 2, 3)),
-                4,
-                None,
-            ),
-            (
-                Variable("a", Domain.for_values(1, 2, 3)),
-                1,
-                Variable("a", Domain(frozenset({1})), 1),
-            ),
-        ]
-    ):
-        with subtests.test(variable=variable, value=value, expected=expected):
-            if expected is None:
-                with pytest.raises(Variable.ValueError):
-                    variable.assign(value)
-            else:
-                assert variable.assign(value) == expected
+def test_build_with_invalid_value():
+    delta_record = DeltaRecord()
+    with pytest.raises(Variable.ValueError):
+        Variable(delta_record, "a", Domain(delta_record, {1, 2, 3}), 4)
 
 
-def test_with_domain(subtests):
-    for variable, domain, expected in list[tuple[Variable, Domain, Optional[Variable]]](
-        [
-            (
-                Variable("a", Domain.for_values(1, 2, 3)),
-                Domain.for_values(4, 5, 6),
-                Variable("a", Domain.for_values(4, 5, 6)),
-            ),
-            (
-                Variable("a", Domain.for_values(1, 2, 3), 1),
-                Domain.for_values(4, 5, 6),
-                None,
-            ),
-        ]
-    ):
-        with subtests.test(variable=variable, domain=domain, expected=expected):
-            if expected is None:
-                with pytest.raises(Variable.ValueError):
-                    variable.with_domain(domain)
-            else:
-                assert variable.with_domain(domain) == expected
+def test_assign_invalid_value():
+    delta_record = DeltaRecord()
+    variable = Variable(delta_record, "a", Domain(delta_record, {1, 2, 3}))
+    with pytest.raises(Variable.ValueError):
+        variable.assign(4)
 
 
-def test_make(subtests):
-    for name, values, assigned, expected in list[
-        tuple[
-            str,
-            list[int],
-            Optional[int],
-            Optional[Variable],
-        ],
-    ](
-        [
-            (
-                "a",
-                [1, 2, 3],
-                4,
-                None,
-            ),
-            (
-                "a",
-                [1, 2, 3],
-                None,
-                Variable("a", Domain.for_values(1, 2, 3)),
-            ),
-            (
-                "a",
-                [1, 2, 3],
-                1,
-                Variable("a", Domain.for_values(1, 2, 3), 1),
-            ),
-        ]
-    ):
-        with subtests.test(
-            name=name,
-            values=values,
-            assigned=assigned,
-            expected=expected,
-        ):
-            if expected is None:
-                with pytest.raises(Variable.ValueError):
-                    Variable.make(name, *values, assigned=assigned)
-            else:
-                assert Variable.make(name, *values, assigned=assigned)
+def test_unassign_value():
+    delta_record = DeltaRecord()
+    variable = Variable(delta_record, "a", Domain(delta_record, {1, 2, 3}), 1)
+    assert variable.name == "a"
+    assert variable.domain == {1, 2, 3}
+    assert variable.value() == 1
+    assert variable.is_assigned()
+    variable.unassign()
+    assert variable.value() is None
+    assert not variable.is_assigned()
+
+
+def test_revert():
+    delta_record = DeltaRecord()
+    variable = Variable(delta_record, "a", Domain(delta_record, {1, 2, 3}))
+    assert variable.name == "a"
+    assert variable.value() is None
+    assert variable.domain == {1, 2, 3}
+    assert not variable.is_assigned()
+    variable.assign(1)
+    assert variable.value() == 1
+    variable.unassign()
+    assert variable.value() is None
+    variable.revert()
+    assert variable.value() == 1
+    variable.revert()
+    assert variable.value() is None
+
+
+def test_invalid_delta_records():
+    with pytest.raises(Variable.Error):
+        Variable(DeltaRecord(), "a", Domain(DeltaRecord(), {1, 2, 3}))
+
+
+def test_domain_values():
+    delta_record = DeltaRecord()
+    variable = Variable(delta_record, "a", Domain(delta_record, {1, 2, 3}))
+    assert variable.domain == {1, 2, 3}
+    assert variable.domain_values() == {1, 2, 3}
+
+
+def test_add_value_to_domain():
+    delta_record = DeltaRecord()
+    variable = Variable(delta_record, "a", Domain(delta_record, {1, 2, 3}))
+    assert variable.domain == {1, 2, 3}
+    assert variable.domain_values() == {1, 2, 3}
+    variable.add_value_to_domain(4)
+    assert variable.domain == {1, 2, 3, 4}
+    assert variable.domain_values() == {1, 2, 3, 4}
+    variable.revert()
+    assert variable.domain == {1, 2, 3}
+    assert variable.domain_values() == {1, 2, 3}
+
+
+def test_remove_value_from_domain():
+    delta_record = DeltaRecord()
+    variable = Variable(delta_record, "a", Domain(delta_record, {1, 2, 3}))
+    assert variable.domain == {1, 2, 3}
+    assert variable.domain_values() == {1, 2, 3}
+    variable.remove_value_from_domain(2)
+    assert variable.domain == {1, 3}
+    assert variable.domain_values() == {1, 3}
+    variable.revert()
+    assert variable.domain == {1, 2, 3}
+    assert variable.domain_values() == {1, 2, 3}
+
+
+def test_remove_invalid_value_from_domain():
+    delta_record = DeltaRecord()
+    variable = Variable(delta_record, "a", Domain(delta_record, {1}))
+    with pytest.raises(Variable.DomainError):
+        variable.remove_value_from_domain(2)
+
+
+def test_domain_size():
+    delta_record = DeltaRecord()
+    variable = Variable(delta_record, "a", Domain(delta_record, {1, 2, 3}))
+    assert variable.domain == {1, 2, 3}
+    assert variable.domain_size() == 3
+
+
+def test_add_duplicate_value_to_domain():
+    delta_record = DeltaRecord()
+    variable = Variable(delta_record, "a", Domain(delta_record, {1}))
+    variable.add_value_to_domain(1)  # should be a no-op
+    assert variable.domain == {1}
+    variable.revert()
+    assert variable.domain == {1}

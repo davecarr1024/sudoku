@@ -1,107 +1,75 @@
 from .domain import Domain
+from .delta_record import DeltaRecord
+import pytest
 
 
-def test_len(subtests):
-    for domain, expected in list[tuple[Domain[int], int]](
-        [
-            (
-                Domain[int](),
-                0,
-            ),
-            (
-                Domain[int](frozenset({1, 2, 3})),
-                3,
-            ),
-        ]
-    ):
-        with subtests.test(domain=domain, expected=expected):
-            assert len(domain) == expected
+def test_add_value():
+    domain = Domain(DeltaRecord(), set())
+    domain.add_value(1)
+    assert set(domain) == {1}
+    domain.revert()
+    assert set(domain) == set()
 
 
-def test_contains(subtests):
-    for domain, value, expected in list[tuple[Domain[int], int, bool]](
-        [
-            (
-                Domain[int](),
-                1,
-                False,
-            ),
-            (
-                Domain[int](frozenset({1})),
-                2,
-                False,
-            ),
-            (
-                Domain[int](frozenset({1})),
-                1,
-                True,
-            ),
-        ]
-    ):
-        with subtests.test(domain=domain, value=value, expected=expected):
-            assert (value in domain) == expected
+def test_add_value_in_context():
+    delta_record = DeltaRecord()
+    domain = Domain(delta_record, set())
+    with delta_record.maintain_state():
+        domain.add_value(1)
+        assert set(domain) == {1}
+    assert set(domain) == set()
 
 
-def test_and(subtests):
-    for lhs, rhs, expected in list[tuple[Domain[int], Domain[int], Domain[int]]](
-        [
-            (
-                Domain[int](),
-                Domain[int](),
-                Domain[int](),
-            ),
-            (
-                Domain[int](frozenset({1, 2})),
-                Domain[int](frozenset({2, 3})),
-                Domain[int](frozenset({2})),
-            ),
-        ]
-    ):
-        with subtests.test(lhs=lhs, rhs=rhs, expected=expected):
-            assert lhs & rhs == expected
+def test_multiple_values():
+    delta_record = DeltaRecord()
+    domain = Domain(delta_record, set())
+    with delta_record.maintain_state():
+        domain.add_value(1)
+        domain.add_value(2)
+        assert set(domain) == {1, 2}
+    assert set(domain) == set()
 
 
-def test_or(subtests):
-    for lhs, rhs, expected in list[tuple[Domain[int], Domain[int], Domain[int]]](
-        [
-            (
-                Domain[int](),
-                Domain[int](),
-                Domain[int](),
-            ),
-            (
-                Domain[int](frozenset({1, 2})),
-                Domain[int](frozenset({2, 3})),
-                Domain[int](frozenset({1, 2, 3})),
-            ),
-        ]
-    ):
-        with subtests.test(lhs=lhs, rhs=rhs, expected=expected):
-            assert lhs | rhs == expected
+def test_partial_revert():
+    delta_record = DeltaRecord()
+    domain = Domain(delta_record, set())
+    domain.add_value(1)
+    assert set(domain) == {1}
+    with delta_record.maintain_state():
+        domain.add_value(2)
+        domain.remove_value(1)
+        assert set(domain) == {2}
+    assert set(domain) == {1}
 
 
-def test_sub(subtests):
-    for lhs, rhs, expected in list[tuple[Domain[int], Domain[int], Domain[int]]](
-        [
-            (
-                Domain[int](),
-                Domain[int](),
-                Domain[int](),
-            ),
-            (
-                Domain[int](frozenset({1, 2})),
-                Domain[int](frozenset({2, 3})),
-                Domain[int](frozenset({1})),
-            ),
-        ]
-    ):
-        with subtests.test(lhs=lhs, rhs=rhs, expected=expected):
-            assert lhs - rhs == expected
+def test_remove_value():
+    domain = Domain(DeltaRecord(), {1})
+    domain.remove_value(1)
+    assert set(domain) == set()
+    domain.revert()
+    assert set(domain) == {1}
 
 
-def test_with_value():
-    assert Domain[int]().with_value(1) == Domain[int](frozenset({1}))
+def test_double_remove():
+    domain = Domain(DeltaRecord(), {1})
+    domain.remove_value(1)
+    with pytest.raises(Domain.Error):
+        domain.remove_value(1)
 
 
-def test_without_value():
-    assert Domain[int](frozenset({1})).without_value(1) == Domain[int]()
+def test_double_add():
+    domain = Domain(DeltaRecord(), set())
+    domain.add_value(1)
+    assert set(domain) == {1}
+    domain.add_value(1)
+    assert set(domain) == {1}
+    domain.revert()
+    assert set(domain) == {1}
+    domain.revert()
+    assert set(domain) == set()
+
+
+def test_delta_underflow():
+    domain = Domain(DeltaRecord(), set())
+    with pytest.raises(DeltaRecord.Error):
+        domain.revert()
