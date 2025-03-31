@@ -1,1 +1,1 @@
-clear && black . && ruff check --fix . && pyright && pytest -vv
+clear && black . && ruff check --fix . && pyright && pytest -s -vv
