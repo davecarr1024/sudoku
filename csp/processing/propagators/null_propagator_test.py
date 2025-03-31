@@ -1,9 +1,7 @@
-from .delta_record import DeltaRecord
-from .variable import Variable
-from .state import State
-from .domain import Domain
-from .csp import CSP
-from .null_propagator import NullPropagator
+from csp.delta import DeltaRecord
+from csp.state import State, Variable, Domain
+from csp.model import CSP
+from csp.processing.propagators import NullPropagator
 
 
 def test_null_propagator_success():

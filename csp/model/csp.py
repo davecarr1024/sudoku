@@ -1,5 +1,5 @@
-from .constraint import Constraint
-from .state import State
+from csp.model.constraint import Constraint
+from csp.state import State
 from typing import Iterable, Iterator, override
 from collections.abc import Set
 from collections import defaultdict

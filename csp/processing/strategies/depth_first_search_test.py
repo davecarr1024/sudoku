@@ -1,12 +1,9 @@
-from .depth_first_search import DepthFirstSearch
-from .null_propagator import NullPropagator
-from .ac3_propagator import AC3Propagator
-from .domain import Domain
-from .variable import Variable
-from .state import State
-from .delta_record import DeltaRecord
-from .csp import CSP
-from .all_different import AllDifferent
+from csp.processing.strategies import DepthFirstSearch
+from csp.processing.propagators import NullPropagator, AC3
+from csp.state import Domain, Variable, State
+from csp.delta import DeltaRecord
+from csp.model import CSP
+from csp.model.constraints import AllDifferent
 
 
 def test_basic_solution():
@@ -32,7 +29,7 @@ def test_unsolvable():
     state = State(delta_record, [a, b])
     csp = CSP([AllDifferent({"a", "b"})])
 
-    solver = DepthFirstSearch(propagator=AC3Propagator())
+    solver = DepthFirstSearch(propagator=AC3())
     result = solver.solve(csp, state)
 
     assert not result.success
@@ -50,7 +47,7 @@ def test_propagation_assists_search():
             AllDifferent({"b", "c"}),
         ]
     )
-    solver = DepthFirstSearch(propagator=AC3Propagator())
+    solver = DepthFirstSearch(propagator=AC3())
     result = solver.solve(csp, state)
 
     assert result.success
@@ -65,7 +62,7 @@ def test_mrv_heuristic_effect():
     state = State(delta_record, [a, b])
     csp = CSP([AllDifferent({"a", "b"})])
 
-    solver = DepthFirstSearch(propagator=AC3Propagator(), minimum_remaining_values=True)
+    solver = DepthFirstSearch(propagator=AC3(), minimum_remaining_values=True)
     result = solver.solve(csp, state)
 
     assert result.success
@@ -81,7 +78,7 @@ def test_lcv_heuristic_does_not_break_correctness():
     csp = CSP([AllDifferent({"a", "b"})])
 
     solver = DepthFirstSearch(
-        propagator=AC3Propagator(),
+        propagator=AC3(),
         minimum_remaining_values=True,
         least_constraining_values=True,
     )

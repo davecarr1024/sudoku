@@ -1,8 +1,6 @@
-from .delta_object import DeltaObject
-from .delta_record import DeltaRecord
-from .delta import Delta
+from csp.delta import DeltaObject, DeltaRecord, Delta
+from csp.state.domain import Domain
 from typing import Optional, override
-from .domain import Domain
 
 
 class VariableAssign[T](Delta["Variable[T]"]):

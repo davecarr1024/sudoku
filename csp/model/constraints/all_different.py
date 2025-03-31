@@ -1,4 +1,4 @@
-from .constraint import Constraint
+from csp.model import Constraint
 from typing import Mapping, override
 
 

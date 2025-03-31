@@ -1,13 +1,11 @@
-from .propagator import Propagator
-from .csp import CSP
-from .state import State
-from .variable import Variable
-from .constraint import Constraint
+from csp.processing import Propagator
+from csp.model import CSP, Constraint
+from csp.state import State, Variable
 from collections import deque
 from collections.abc import Mapping
 
 
-class AC3Propagator[T](Propagator[T]):
+class AC3[T](Propagator[T]):
     def propagate(self, csp: CSP[T], state: State[T]) -> Propagator.Result:
         """
         Applies the AC-3 (Arc Consistency 3) algorithm to enforce arc consistency on the CSP.

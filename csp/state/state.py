@@ -1,6 +1,5 @@
-from .variable import Variable
-from .delta_object import DeltaObject
-from .delta_record import DeltaRecord
+from csp.state.variable import Variable
+from csp.delta import DeltaObject, DeltaRecord
 from typing import Iterable, Iterator, override
 from collections.abc import Mapping
 

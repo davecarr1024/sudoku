@@ -1,6 +1,6 @@
-from .variable import Variable
-from .domain import Domain
-from .delta_record import DeltaRecord
+from csp.state.variable import Variable
+from csp.state.domain import Domain
+from csp.delta import DeltaRecord
 import pytest
 
 

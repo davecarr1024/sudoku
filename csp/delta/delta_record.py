@@ -1,4 +1,4 @@
-from .abstract_delta import AbstractDelta
+from csp.delta.abstract_delta import AbstractDelta
 from typing import override, Iterable, Sized, Iterator
 from contextlib import contextmanager
 

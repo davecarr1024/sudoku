@@ -1,7 +1,4 @@
-from .delta import Delta
-from .delta_object import DeltaObject
-from .delta_record import DeltaRecord
-from .noop import Noop
+from csp.delta import Delta, DeltaObject, DeltaRecord, Noop
 from typing import override, Iterator
 from collections.abc import Set
 

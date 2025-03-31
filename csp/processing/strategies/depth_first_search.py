@@ -1,8 +1,6 @@
-from .csp import CSP
-from .state import State
-from .variable import Variable
-from .propagator import Propagator
-from .search_strategy import SearchStrategy
+from csp.model import CSP
+from csp.state import State, Variable
+from csp.processing import Propagator, SearchStrategy
 
 
 class DepthFirstSearch[T](SearchStrategy[T]):

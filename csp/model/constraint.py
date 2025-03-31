@@ -1,4 +1,4 @@
-from .state import State
+from csp.state import State
 from abc import ABC, abstractmethod
 from typing import Mapping
 

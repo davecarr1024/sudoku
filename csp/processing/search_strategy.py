@@ -1,6 +1,6 @@
-from .csp import CSP
-from .state import State
-from .propagator import Propagator
+from csp.model import CSP
+from csp.state import State
+from csp.processing import Propagator
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 

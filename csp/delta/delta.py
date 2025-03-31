@@ -1,4 +1,4 @@
-from .abstract_delta import AbstractDelta
+from csp.delta.abstract_delta import AbstractDelta
 
 
 class Delta[Object: "delta_object.DeltaObject"](AbstractDelta):

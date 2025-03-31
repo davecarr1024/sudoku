@@ -1,5 +1,5 @@
-from .delta_record import DeltaRecord
-from .abstract_delta import AbstractDelta
+from csp.delta.delta_record import DeltaRecord
+from csp.delta.abstract_delta import AbstractDelta
 from contextlib import contextmanager
 from typing import Iterator
 

@@ -1,8 +1,6 @@
-from .all_different import AllDifferent
-from .state import State
-from .variable import Variable
-from .delta_record import DeltaRecord
-from .domain import Domain
+from csp.model.constraints import AllDifferent
+from csp.state import State, Variable, Domain
+from csp.delta import DeltaRecord
 
 
 def test_is_satisfied_with_partial():
