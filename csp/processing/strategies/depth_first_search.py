@@ -7,8 +7,8 @@ class DepthFirstSearch[T](SearchStrategy[T]):
     def __init__(
         self,
         propagator: Propagator[T],
-        minimum_remaining_values: bool = False,
-        least_constraining_values: bool = False,
+        minimum_remaining_values: bool = True,
+        least_constraining_values: bool = True,
     ) -> None:
         self._propagator = propagator
         self._mrv = minimum_remaining_values
@@ -16,7 +16,12 @@ class DepthFirstSearch[T](SearchStrategy[T]):
 
     def solve(self, csp: CSP[T], state: State[T]) -> SearchStrategy.Result:
         stats = SearchStrategy.Stats()
-        success = self._dfs(csp, state, stats)
+        result = self._propagator.propagate(csp, state)
+        stats.propagations += 1
+        stats.propagator_stats += result.stats
+        if not result.success:
+            return SearchStrategy.Result(success=False, stats=stats)
+        success = self._dfs(csp, state, stats, 0)
         return SearchStrategy.Result(success=success, stats=stats)
 
     def _dfs(
@@ -24,14 +29,22 @@ class DepthFirstSearch[T](SearchStrategy[T]):
         csp: CSP[T],
         state: State[T],
         stats: SearchStrategy.Stats,
+        depth: int,
     ) -> bool:
         stats.state_visits += 1
+        stats.max_depth = max(stats.max_depth, depth)
+
+        # values = {name: var.value() for name, var in state.items() if var.is_assigned()}
+        # print(f"dfs: depth = {depth} stats = {stats} values = {values}")
 
         if not state.is_valid():
             return False
 
+        if not csp.is_satisfied(state):
+            return False
+
         if all(v.is_assigned() for v in state.variables()):
-            return csp.is_satisfied(state)
+            return True
 
         # Select unassigned variable
         def variable_key(var: Variable[T]) -> int:
@@ -54,13 +67,10 @@ class DepthFirstSearch[T](SearchStrategy[T]):
             stats.propagator_stats += result.stats
 
             if result.success:
-                if self._dfs(csp, state, stats):
+                if self._dfs(csp, state, stats, depth + 1):
                     return True  # <- early return preserves solution
 
             state.revert_to(checkpoint)
-            print(
-                f"Reverted to checkpoint. Current domains: {[ (v.name, v.domain_values()) for v in state.variables() ]}"
-            )
 
         return False
 
