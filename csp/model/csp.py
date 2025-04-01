@@ -32,18 +32,20 @@ class CSP[T]:
     def neighbors(self, var: str) -> Set[str]:
         return self._neighbors.get(var, set())
 
-    def is_satisfied(self, state: "State[T]") -> bool:
-        return all(constraint.is_satisfied(state) for constraint in self._constraints)
+    def is_satisfied_for_constraints(
+        self, state: State[T], constraints: Iterable[Constraint[T]]
+    ) -> bool:
+        return all(constraint.is_satisfied(state) for constraint in constraints)
+
+    def is_satisfied(self, state: State[T]) -> bool:
+        return self.is_satisfied_for_constraints(state, self.constraints())
 
     def is_satisfied_for_constraints_for_var(self, var: str, state: State[T]) -> bool:
-        return all(
-            constraint.is_satisfied(state) for constraint in self.constraints_for(var)
-        )
+        return self.is_satisfied_for_constraints(state, self.constraints_for(var))
 
     def is_satisfied_for_constraints_between(
         self, var1: str, var2: str, state: State[T]
     ) -> bool:
-        return all(
-            constraint.is_satisfied(state)
-            for constraint in self.constraints_between(var1, var2)
+        return self.is_satisfied_for_constraints(
+            state, self.constraints_between(var1, var2)
         )

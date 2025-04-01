@@ -4,7 +4,7 @@ from csp.delta import DeltaRecord
 from csp.model import CSP
 from csp.processing import SearchStrategy
 from csp.processing.strategies import DepthFirstSearch
-from csp.processing.propagators import NullPropagator
+from csp.processing.propagators import NullPropagator, SimplePropagator
 import pytest
 from collections.abc import Mapping
 from typing import Optional
@@ -166,6 +166,7 @@ def test_solve(subtests):
     for strategy in list[SearchStrategy[int]](
         [
             DepthFirstSearch(NullPropagator()),
+            DepthFirstSearch(SimplePropagator()),
         ]
     ):
         for name, game, expected in list[
@@ -246,7 +247,7 @@ def test_solve(subtests):
                     4 . . .
                 """
                     ),
-                    {(0, 0): 2, (3, 3): 1},
+                    {},
                 ),
                 (
                     "4x4-contradiction-square-duplicate",
@@ -303,4 +304,5 @@ def test_solve(subtests):
                 else:
                     result, _ = game.solve(strategy)
                     for key, val in expected.items():
-                        assert result[key] == val
+                        assert result[key] == val, str(result)
+                    assert result.satisfies_puzzle(game)

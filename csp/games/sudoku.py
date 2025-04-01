@@ -184,3 +184,6 @@ class Sudoku(Game[int], MutableMapping[tuple[int, int], int]):
                 for col, value in enumerate(row_vals)
             },
         )
+
+    def satisfies_puzzle(self, rhs: "Sudoku") -> bool:
+        return all(value == 0 or self[key] == value for key, value in rhs.items())

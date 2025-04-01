@@ -20,4 +20,8 @@ class Game[T](ABC):
         result = strategy.solve(csp, state)
         if not result.success:
             raise self.Error("No solution found")
+        if not state.is_valid():
+            raise self.Error("Solution state is not valid")
+        if not csp.is_satisfied(state):
+            raise self.Error("CSP is not satisfied")
         return (self.from_state(csp, state), result.stats)
