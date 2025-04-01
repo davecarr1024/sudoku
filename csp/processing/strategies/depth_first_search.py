@@ -1,6 +1,7 @@
 from csp.model import CSP
 from csp.state import State, Variable
 from csp.processing import Propagator, SearchStrategy
+import time
 
 
 class DepthFirstSearch[T](SearchStrategy[T]):
@@ -15,6 +16,7 @@ class DepthFirstSearch[T](SearchStrategy[T]):
         self._lcv = least_constraining_values
 
     def solve(self, csp: CSP[T], state: State[T]) -> SearchStrategy.Result:
+        start = time.perf_counter()
         stats = SearchStrategy.Stats()
         result = self._propagator.propagate(csp, state)
         stats.propagations += 1
@@ -22,6 +24,7 @@ class DepthFirstSearch[T](SearchStrategy[T]):
         if not result.success:
             return SearchStrategy.Result(success=False, stats=stats)
         success = self._dfs(csp, state, stats, 0)
+        stats.elapsed_time = time.perf_counter() - start
         return SearchStrategy.Result(success=success, stats=stats)
 
     def _dfs(

@@ -1,7 +1,7 @@
 from csp.games import Sudoku
 from csp.processing import SearchStrategy
 from csp.processing.strategies import DepthFirstSearch
-from csp.processing.propagators import NullPropagator
+from csp.processing.propagators import NullPropagator, SimplePropagator
 
 # === Define Benchmark Puzzles ===
 puzzles = [
@@ -49,22 +49,22 @@ puzzles = [
             """
         ),
     ),
-    # (
-    #     "9x9-easy",
-    #     Sudoku.from_str(
-    #         """
-    #         1 2 . . . . . . .
-    #         . . . . . . . . .
-    #         . . . . . . . . .
-    #         . . . . . . . . .
-    #         . . . . . . . . .
-    #         . . . . . . . . .
-    #         . . . . . . . . .
-    #         . . . . . . . . .
-    #         . . . . . . . . 3
-    #         """
-    #     ),
-    # ),
+    (
+        "9x9-easy",
+        Sudoku.from_str(
+            """
+            1 2 . . . . . . .
+            . . . . . . . . .
+            . . . . . . . . .
+            . . . . . . . . .
+            . . . . . . . . .
+            . . . . . . . . .
+            . . . . . . . . .
+            . . . . . . . . .
+            . . . . . . . . 3
+            """
+        ),
+    ),
 ]
 
 # === Define Search Strategies ===
@@ -74,7 +74,13 @@ strategies: list[tuple[str, SearchStrategy[int]]] = [
         DepthFirstSearch(
             NullPropagator(),
         ),
-    )
+    ),
+    (
+        "DFS + SimplePropagator",
+        DepthFirstSearch(
+            SimplePropagator(),
+        ),
+    ),
 ]
 
 
