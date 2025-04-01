@@ -1,7 +1,7 @@
 from csp.games import Sudoku
 from csp.processing import SearchStrategy
 from csp.processing.strategies import DepthFirstSearch
-from csp.processing.propagators import NullPropagator, SimplePropagator
+from csp.processing.propagators import NullPropagator, SimplePropagator, AC3
 
 # === Define Benchmark Puzzles ===
 puzzles = [
@@ -81,6 +81,12 @@ strategies: list[tuple[str, SearchStrategy[int]]] = [
             SimplePropagator(),
         ),
     ),
+(
+    "DFS + AC3",
+    DepthFirstSearch(
+        AC3(),
+    ),
+),
 ]
 
 

@@ -4,7 +4,7 @@ from csp.delta import DeltaRecord
 from csp.model import CSP
 from csp.processing import SearchStrategy
 from csp.processing.strategies import DepthFirstSearch
-from csp.processing.propagators import NullPropagator, SimplePropagator
+from csp.processing.propagators import NullPropagator, SimplePropagator, AC3
 import pytest
 from collections.abc import Mapping
 from typing import Optional
@@ -167,6 +167,7 @@ def test_solve(subtests):
         [
             DepthFirstSearch(NullPropagator()),
             DepthFirstSearch(SimplePropagator()),
+            DepthFirstSearch(AC3()),
         ]
     ):
         for name, game, expected in list[
