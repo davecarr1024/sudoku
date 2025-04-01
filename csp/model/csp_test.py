@@ -8,18 +8,16 @@ def test_collection():
     c1 = AllDifferent[int]({"a", "b"})
     c2 = AllDifferent[int]({"b", "c"})
     csp = CSP[int]([c1, c2])
-    assert csp == {c1, c2}
-    assert len(csp) == 2
-    assert csp.constraints() == {c1, c2}
+    assert csp.constraints() == [c1, c2]
 
 
 def test_constraints_for():
     c1 = AllDifferent[int]({"a", "b"})
     c2 = AllDifferent[int]({"b", "c"})
     csp = CSP[int]([c1, c2])
-    assert csp.constraints_for("a") == {c1}
-    assert csp.constraints_for("b") == {c1, c2}
-    assert csp.constraints_for("c") == {c2}
+    assert csp.constraints_for("a") == [c1]
+    assert csp.constraints_for("b") == [c1, c2]
+    assert csp.constraints_for("c") == [c2]
 
 
 def test_is_satisfied():
@@ -51,16 +49,16 @@ def test_is_satisfied():
 
 def test_constraints_for_unknown_var():
     csp = CSP[int]([AllDifferent({"a", "b"})])
-    assert csp.constraints_for("d") == set()
+    assert csp.constraints_for("d") == []
 
 
 def test_constraints_between():
     c1 = AllDifferent[int]({"a", "b"})
     c2 = AllDifferent[int]({"b", "c"})
     csp = CSP[int]([c1, c2])
-    assert csp.constraints_between("a", "b") == {c1}
-    assert csp.constraints_between("b", "c") == {c2}
-    assert csp.constraints_between("a", "c") == set()
+    assert csp.constraints_between("a", "b") == [c1]
+    assert csp.constraints_between("b", "c") == [c2]
+    assert csp.constraints_between("a", "c") == []
 
 
 def test_neighbors():

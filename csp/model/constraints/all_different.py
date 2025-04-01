@@ -1,8 +1,10 @@
 from csp.model import Constraint
-from typing import Mapping, override
+from csp.state import State
+from typing import override
 
 
 class AllDifferent[T](Constraint[T]):
     @override
-    def is_satisfied_with_partial(self, assignment: Mapping[str, T]) -> bool:
-        return len(assignment) == len(set(assignment.values()))
+    def is_satisfied(self, state: State[T]) -> bool:
+        values = self._assigned_values(state)
+        return len(values) == len(set(values))

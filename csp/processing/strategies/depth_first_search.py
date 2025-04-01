@@ -77,15 +77,23 @@ class DepthFirstSearch[T](SearchStrategy[T]):
     def _lcv_score(
         self, csp: CSP[T], state: State[T], variable: Variable[T], value: T
     ) -> int:
-        # Lower score = more preferred
         score = 0
-        for constraint in csp.constraints_for(variable.name):
-            for var_name in constraint.variables:
-                if var_name == variable.name:
+        with state.maintain_state():
+            variable.assign(value)
+
+            # For all neighbors of X, count how many values are still valid
+            for neighbor_name in csp.neighbors(variable.name):
+                neighbor = state[neighbor_name]
+                if neighbor.is_assigned():
                     continue
-                other = state[var_name]
-                for other_value in other.domain_values():
-                    assignment = {variable.name: value, other.name: other_value}
-                    if not constraint.is_satisfied_with_partial(assignment):
-                        score += 1
+
+                # Try assigning each neighbor value and check full constraint satisfaction
+                for neighbor_value in neighbor.domain_values():
+                    with neighbor.maintain_state():
+                        neighbor.assign(neighbor_value)
+                        if not csp.is_satisfied_for_constraints_between(
+                            variable.name, neighbor_name, state
+                        ):
+                            score += 1
+
         return score

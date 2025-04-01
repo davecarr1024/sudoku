@@ -3,11 +3,6 @@ from csp.state import State, Variable, Domain
 from csp.delta import DeltaRecord
 
 
-def test_is_satisfied_with_partial():
-    assert AllDifferent[int]({"a", "b"}).is_satisfied_with_partial({"a": 1, "b": 2})
-    assert not AllDifferent[int]({"a", "b"}).is_satisfied_with_partial({"a": 1, "b": 1})
-
-
 def test_is_satisfied():
     delta_record = DeltaRecord()
     assert AllDifferent[int]({"a", "b"}).is_satisfied(

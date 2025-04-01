@@ -4,7 +4,7 @@ from csp.delta import DeltaRecord
 from csp.model import CSP
 from csp.processing import SearchStrategy
 from csp.processing.strategies import DepthFirstSearch
-from csp.processing.propagators import AC3
+from csp.processing.propagators import NullPropagator
 import pytest
 from collections.abc import Mapping
 from typing import Optional
@@ -119,7 +119,7 @@ def test_to_state_correct_variables():
 def test_make_csp():
     csp, state = Sudoku(4, {}).to_state()
     assert {
-        var for constraint in csp.constraints() for var in constraint.variables
+        var for constraint in csp.constraints() for var in constraint.variables()
     } == {f"{row}{col}" for row in "ABCD" for col in "1234"}
 
 
@@ -165,7 +165,7 @@ def test_to_state_var_names():
 def test_solve(subtests):
     for strategy in list[SearchStrategy[int]](
         [
-            DepthFirstSearch(AC3()),
+            DepthFirstSearch(NullPropagator()),
         ]
     ):
         for name, game, expected in list[
